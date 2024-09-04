@@ -8,46 +8,56 @@
 class Solution {
 public:
     vector<int> findAnagrams(string s, string p) {
-
-        /* stores indices of iteration through s, finding all positions 
-        where anagrams of p are present in s */ 
-        vector<int> indi;
-
-        // in these cases there can be no anagrams of p in s
-        if (s.empty() || p.empty() || s.size() < p.size()) {
-            return indi;
+        vector<int> startIndices;
+        if (s.length() < p.length()) {
+            return startIndices;
         }
 
-        // stores the frequency of characters
-        vector<int> pCount(26, 0), sCount(26, 0);
+        vector<int> pCharCount(26, 0);
+        vector<int> sCharCount(26, 0);
 
-        // p.size is the window size of characters
-        for (int i = 0; i < p.size(); i++) {
-            /* subtracting the ASCII value of 'a' from the ASCII 
-            value of p[i], which gives us an index between 0 and 25*/
-            pCount[p[i] - 'a']++;
-            sCount[s[i] - 'a']++;
+        // correspons to a letter in the alphabet
+        // c - 'a' will give the index of the letter in the alphabet
+        // by incrementing it, we count the occurence of the letter
+        for (char c : p) {
+            pCharCount[c - 'a']++;
         }
 
-        // if the count of characters in p and s are equal, there is an anagram
-        if (pCount == sCount) {
-            // pushes indice of character when window of s is an anagram of p
-            indi.push_back(0);
+        // each character s[i] will be converted to an index
+        // this is a freq counter for a window from 0 to p.length() - 1
+        // we slide this window to the right and increment the occurence
+        // of the letter in the window s
+        for (int i = 0; i < p.length(); i++) {
+            sCharCount[s[i] - 'a']++;
         }
 
-        // moves a window of size p.size over s
-        for (int i = p.size(); i < s.size(); i++) {
-            // increment count of character at index i in s
-            sCount[s[i] - 'a']++;
-            // decrement count of character that was removed from window
-            sCount[s[i - p.size()] - 'a']--;
+        // if the freq counter of the window is equal to the freq counter of p
+        // then we have an anagram
+        if (pCharCount == sCharCount) {
+            startIndices.push_back(0);
+        }
 
-            if (pCount == sCount) {
-                // i - p.size only gives the index just before the window starts
-                indi.push_back(i - p.size() + 1);
+
+        for (int i = p.length(); i < s.length(); i++) {
+            sCharCount[s[i] - 'a']++;
+            // calculate the index of the letter that is leaving the window
+            // i - position of right end of window
+            // p.length - length of the window
+            // i - p.length() - index of char that was at the left end
+            // sCharCount[...] - convert the char to an index and decrement count
+
+            // exmaple: char is b, then s[i - p.length()] - 'a' will be 1 since b - a = 1
+            sCharCount[s[i - p.length()] - 'a']--;
+
+            if (pCharCount == sCharCount) {
+                // i - p.length() + 1 will give the starting index of the window
+                // example: s = "cbaebabacd", p = "abc"
+                // i = 6, p.length() = 3, i - p.length() + 1 = 4
+                // the window is "ebab"
+                startIndices.push_back(i - p.length() + 1);
             }
         }
-        return indi;
+        return startIndices;
     }
 };
 // @lc code=end
